@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
-	xmlns="http://www.mulesoft.org/schema/mule/core"
-	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+<mule xmlns:batch="http://www.mulesoft.org/schema/mule/batch" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
-http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd">
 	<flow name="get-report-by-email" doc:id="289c8b5c-c8ac-419b-bb58-1218ab0e1f8b" >
 		<scatter-gather doc:name="Scatter-Gather" doc:id="4e42e9e1-aeb8-4b12-97b4-48c5267a9ad9" >
 			<route >
@@ -19,9 +20,9 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 		<ee:transform doc:name="Transform Message" doc:id="221fcf94-7502-42d6-bceb-965bc7282dff">
 			<ee:message>
 				<ee:set-payload><![CDATA[%dw 2.0
-output application/json
+output application/dw
 ---
-payload
+vars.trainerInfo << vars."batch-info" << vars.notesWithSkills
 ]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
@@ -35,6 +36,22 @@ payload
 	"email" : vars.trainerEmail
 }]]]></http:uri-params>
 		</http:request>
+		<ee:transform doc:name="Transform Message" doc:id="35019a48-4539-4ce5-8f08-226b49f695b4" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="trainerInfo" ><![CDATA[%dw 2.0
+output application/dw
+---
+[
+	employee: {
+		email: payload.email,
+		firstName: payload.firstName,
+		lastName: payload.lastName
+	}
+]]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
 		<logger level="INFO" doc:name="Logger" doc:id="d7ef883b-898c-4227-96d8-c784b9219ec8" />
 	</flow>
 	<flow name="get-batch-ids" doc:id="82e625b3-4519-4b99-ba66-21359659a088" >
@@ -70,7 +87,35 @@ payload]]></ee:set-payload>
 	"batchId" : payload
 }]]]></http:query-params>
 			</http:request>
-					<set-variable value='#[vars."batch-info" &lt;&lt; payload]' doc:name="batch-info" doc:id="9cbeb261-0c2f-423a-9c98-b8f348a2da4d" variableName="batch-info" />
+					<ee:transform doc:name="Transform Message" doc:id="c324e117-8b23-4dc0-b441-acbc364a6cab" >
+						<ee:message >
+							<ee:set-payload ><![CDATA[%dw 2.0
+output application/dw
+---
+{
+	batch: {
+		id: payload.id,
+		batchId: payload.batchId,
+		name: payload.name,
+		startDate: payload.startDate,
+		endDate: payload.endDate,
+		skill: payload.skill,
+		location: payload.location,
+		"type": payload."type"
+	}
+}]]></ee:set-payload>
+						</ee:message>
+					</ee:transform>
+					<ee:transform doc:name="batch-info" doc:id="5b9da136-fb8b-49d7-9963-ed76ddaf51a0" >
+						<ee:message >
+						</ee:message>
+						<ee:variables >
+							<ee:set-variable variableName="batch-info" ><![CDATA[%dw 2.0
+output application/dw
+---
+vars."batch-info" << payload]]></ee:set-variable>
+						</ee:variables>
+					</ee:transform>
 				</route>
 				<route >
 					<flow-ref doc:name="get-qc-notes" doc:id="8c7e34c9-45ff-4f8d-972a-8c1fa5fb801f" name="get-qc-notes"/>
