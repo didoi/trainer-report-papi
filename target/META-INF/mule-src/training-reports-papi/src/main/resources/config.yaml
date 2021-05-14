@@ -15,3 +15,10 @@ get-qc-notes:
   
 get-category:
   path: "/category"
+  
+get-assessment:
+  host: "caliber2-mock.revaturelabs.com"
+  port: "443"
+  basepath: "/mock/evaluation"
+  path: "/assessments"
+  protocol: "HTTPS"

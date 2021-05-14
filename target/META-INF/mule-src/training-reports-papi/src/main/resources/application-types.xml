@@ -19,13 +19,4 @@ type data = {|
 ]]></types:shape>
     </types:type>
   </types:catalog>
-  <types:enrichment select="#221fcf94-7502-42d6-bceb-965bc7282dff">
-    <types:processor-declaration>
-      <types:output-event>
-        <types:message>
-          <types:payload type="data[]"/>
-        </types:message>
-      </types:output-event>
-    </types:processor-declaration>
-  </types:enrichment>
 </types:mule>
